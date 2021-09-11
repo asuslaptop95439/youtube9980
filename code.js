@@ -1,29 +1,77 @@
-const express = require("express");
-const ytdl = require("ytdl-core");
-const app = express();
+const { json } = require('express');
+const express = require('express');
+const app=express();
+const path= require('path')
+const routers=express.Router();
+console.log(pa);
+app.use(express.json())
+const ytdl  =require('ytdl-core')
 
-app.use(express.json());
-app.use(express.static("public"));
+const port= process.env.PORT || 3000;
+
+app.get("/",(req,res)=>{    
+        res.sendFile(__dirname+ pa)
+
+})
+
+app.get("/privacyp",(req,res)=>{
+    res.sendFile(__dirname+ pa1)
+
+})
+
+app.get("/termsofuse",(req,res)=>{
+    res.sendFile(__dirname+ pa2)
+
+})
+
+app.get("/videoInfo",async function(req,res){
+    const videoURL= req.query.videoURL;
+     const info =await ytdl.getInfo(videoURL)
+     res.status(200).json(info)
+ 
+ 
+ })
+
+ app.get("/download",(req,res)=>{
+     try {
+        let itag= req.query.itag;
+        console.log(itag);
+        if(itag=="mp3")
+        {
+           const videoURL= req.query.videoURL;
+       
+           res.header("Content-Disposition",'attachment; filename="Audio.mp3')
+           ytdl(videoURL,{
+               filter: format => format.itag=="mp3",
+           }).pipe(res)
+            // async function getdata()
+            // {
+            //     const videoURL= req.query.videoURL;
+            //    let info =await ytdl.getInfo(videoURL)
+            //     console.log("video id"+ info.videoDetails.videoId)
+
+            //      info =await ytdl.getInfo(info.videoDetails.videoId)
+            //     let audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
+            //     console.log('Formats with only audio: ' + audioFormats.length);
+            // }
+            // getdata()
+               
+        }
+        else
+        {
+           const videoURL= req.query.videoURL;
+              res.header("Content-Disposition",'attachment;\ filename="Video.mp4"')
+              ytdl(videoURL,{
+                  filter: format => format.itag==itag,
+              }).pipe(res)
+        }
+     } catch (error) {
+         console.log("some thing wrong in dwlod")
+     }
+   
+ })
 
 
-app.get("/",function(request,response){
-	response.sendFile(__dirname + "public/index.html");
-});
-
-app.get("/videoInfo",async function(request,response){
-	const videoURL = request.query.videoURL;
-	const info = await ytdl.getInfo(videoURL);
-	response.status(200).json(info);
-});
-
-app.get("/download",function(request,response){
-	const videoURL = request.query.videoURL;
-	const itag = request.query.itag;
-	const format = request.query.format;
-	response.header("Content-Disposition",'attachment;\ filename="video.'+format+'"');
-	ytdl(videoURL,{
-		filter: format => format.itag == itag
-	}).pipe(response);
-});
-
-app.listen(5000);
+app.listen(port,()=>{
+    console.log("Server Running on port 3000")
+})
